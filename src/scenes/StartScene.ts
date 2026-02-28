@@ -5,6 +5,9 @@ import Phaser from 'phaser'
 import { ARENA_WIDTH, ARENA_HEIGHT } from '../game/config'
 
 export default class StartScene extends Phaser.Scene {
+  restartBtnBg!: Phaser.GameObjects.Rectangle
+  restartBtnText!: Phaser.GameObjects.Text
+
   constructor() {
     super({ key: 'StartScene' })
   }
@@ -49,8 +52,15 @@ export default class StartScene extends Phaser.Scene {
     restartBtnBg.on('pointerover', () => restartBtnBg.setFillStyle(0x333344))
     restartBtnBg.on('pointerout', () => restartBtnBg.setFillStyle(0x222222, 0.9))
     restartBtnBg.on('pointerdown', () => this.restartGame())
+    // start with restart hidden until a game has been launched
+    restartBtnBg.setVisible(false)
+    restartBtnText.setVisible(false)
 
     menu.add([newBtnBg, newBtnText, restartBtnBg, restartBtnText])
+
+    // keep references so we can toggle visibility later
+    this.restartBtnBg = restartBtnBg
+    this.restartBtnText = restartBtnText
 
     // footer
     const info = this.add.text(this.scale.width / 2, this.scale.height - 40, 'Click New Game to start', { font: '14px monospace', color: '#ccc' }).setOrigin(0.5)
@@ -60,12 +70,20 @@ export default class StartScene extends Phaser.Scene {
     // start game and UI
     this.scene.start('GameScene')
     this.scene.start('UIScene')
+    this.showRestart()
   }
 
   restartGame() {
     // restart same as start: ensure fresh scene
+    // use restart() for GameScene/UIScene to guarantee clean reset
     this.scene.stop('GameScene')
     this.scene.start('GameScene')
     this.scene.start('UIScene')
+    this.showRestart()
+  }
+
+  private showRestart() {
+    if (this.restartBtnBg) this.restartBtnBg.setVisible(true)
+    if (this.restartBtnText) this.restartBtnText.setVisible(true)
   }
 }

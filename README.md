@@ -21,8 +21,8 @@ Controls
 - WASD: move
 - Mouse: aim
 - Left mouse (hold): shoot
-- Esc: pause/resume
-- R: restart after Game Over
+- Esc: return to main menu (any time during play or when game over)
+- Restart button only becomes visible once a game has been started
 
 Project structure
 
@@ -40,7 +40,7 @@ Project structure
 To Extend 
 [x] Make player look different.  
 [x] Make enemies look different.  
-[ ] Allow user to go back to main menu from the game.  
+[x] Allow user to go back to main menu from the game.  
 [ ] Make ammo sprite look different.  
 [ ] Make weapon sprite look different.  
 [ ] Only spawn inital ammo and then let some enemies drop ammo on death.  

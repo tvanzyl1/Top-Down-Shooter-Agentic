@@ -29,8 +29,9 @@ export default class UIScene extends Phaser.Scene {
     const bg = this.add.rectangle(0, 0, 420, 180, 0x000000, 0.7)
     const title = this.add.text(-180, -60, 'Game Over', { font: '28px monospace', color: '#fff' })
     const info = this.add.text(-180, -10, '', { font: '16px monospace', color: '#fff' })
-    const restart = this.add.text(-180, 40, 'Press R to restart', { font: '14px monospace', color: '#fff' })
-    this.overlay.add([bg, title, info, restart])
+    // provide a hint about escaping to main menu
+    const menuTip = this.add.text(-180, 40, 'Press Esc for menu', { font: '14px monospace', color: '#fff' })
+    this.overlay.add([bg, title, info, menuTip])
     this.overlay.setVisible(false)
 
     this.game.events.on('hud:update', (data: any) => {
