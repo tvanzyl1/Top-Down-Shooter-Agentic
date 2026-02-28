@@ -3,7 +3,7 @@
 */
 import Phaser from 'phaser'
 import Player from '../entities/Player'
-import Enemy from '../entities/Enemy'
+import Enemy, { HeavyEnemy } from '../entities/Enemy'
 import Bullet from '../entities/Bullet'
 import InputSystem from '../systems/InputSystem'
 import SpawnerSystem from '../systems/SpawnerSystem'
@@ -287,8 +287,14 @@ export default class GameScene extends Phaser.Scene {
     return b
   }
 
-  spawnEnemy(x: number, y: number) {
-    const e = new Enemy(this, x, y)
+  // type may be 'normal' or 'heavy'
+  spawnEnemy(x: number, y: number, type: string = 'normal') {
+    let e: Enemy
+    if (type === 'heavy') {
+      e = new HeavyEnemy(this, x, y)
+    } else {
+      e = new Enemy(this, x, y)
+    }
     this.enemies.push(e)
     if (e.sprite) this.enemiesGroup.add(e.sprite)
     return e

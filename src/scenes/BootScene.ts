@@ -127,6 +127,26 @@ export default class BootScene extends Phaser.Scene {
     g.fillRect(ec + 0, ec + 4, 4, 6)
     g.generateTexture('enemy', eSize, eSize)
     g.clear()
+    // heavy enemy (bigger, red) - 24x24 for extra size
+    const hSize = 24
+    const hc = hSize / 2
+    g.clear()
+    // torso (red)
+    g.fillStyle(0xcc3333)
+    g.fillRect(hc - 7, hc - 7, 14, 14)
+    // head (darker red)
+    g.fillStyle(0x993333)
+    g.fillRect(hc - 5, hc - 11, 10, 10)
+    // arms
+    g.fillStyle(0xcc3333)
+    g.fillRect(hc - 11, hc - 5, 4, 10)
+    g.fillRect(hc + 7, hc - 5, 4, 10)
+    // legs
+    g.fillStyle(0x662222)
+    g.fillRect(hc - 5, hc + 5, 5, 8)
+    g.fillRect(hc + 0, hc + 5, 5, 8)
+    g.generateTexture('heavy-enemy', hSize, hSize)
+    g.clear()
 
 
     // building texture (simple block with windows)
