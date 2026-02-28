@@ -37,19 +37,19 @@ Project structure
   - systems/InputSystem.ts, SpawnerSystem.ts, CollisionSystem.ts, DifficultySystem.ts
   - utils/math.ts, constants.ts
 
-To extend
-[x] Make player look different.
-[x] Make enemies look different.
-[ ] Allow user to go back to main menu from the game.
-[ ] Make ammo sprite look different.
-[ ] Make weapon sprite look different.
-[ ] Only spawn inital ammo and then let some enemies drop ammo on death.
-[ ] Add new weapons: add a new system or extend `Player` to support variants.
-[ ] Add enemy types: extend `Enemy` and update `SpawnerSystem`.
-[ ] Add powerups: create new entities and spawn logic in `SpawnerSystem`.
-[ ] Change the game back ground to a dark grey and buildings to a different color.
-[ ] Add a "light" affect like a flash light.
-[ ] Extend flash light and light affect to make map dark around player.
+To Extend 
+[x] Make player look different.  
+[x] Make enemies look different.  
+[ ] Allow user to go back to main menu from the game.  
+[ ] Make ammo sprite look different.  
+[ ] Make weapon sprite look different.  
+[ ] Only spawn inital ammo and then let some enemies drop ammo on death.  
+[ ] Add new weapons: add a new system or extend `Player` to support variants.  
+[ ] Add enemy types: extend `Enemy` and update `SpawnerSystem`.  
+[ ] Add powerups: create new entities and spawn logic in `SpawnerSystem`.  
+[ ] Change the game back ground to a dark grey and buildings to a different color.  
+[ ] Add a "light" affect like a flash light.  
+[ ] Extend flash light and light affect to make map dark around player.  
 
 Progress so far
 
