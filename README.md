@@ -23,6 +23,7 @@ Controls
 - Left mouse (hold): shoot
 - Esc: return to main menu (any time during play or when game over)
 - 1 / 2: switch between pistol and shotgun when available (shotgun pickups appear after score ≥100; shells spawn infrequently only once shotgun has been picked up)
+- Heavy enemies (red, more HP) begin appearing occasionally after score ≥100
 - Restart button only becomes visible once a game has been started
 
 Project structure
@@ -46,7 +47,7 @@ To Extend
 [x] Make weapon sprite look different.  
 [x] Add new weapons: add a new system or extend `Player` to support variants.  
 [ ] Fix rate of fire of different weapons
-[ ] Add enemy types: extend `Enemy` and update `SpawnerSystem`.  
+[x] Add enemy types: extend `Enemy` and update `SpawnerSystem`.  
 [ ] Add powerups: create new entities and spawn logic in `SpawnerSystem`.  
 [ ] Change the game back ground to a dark grey and buildings to a different color.  
 [ ] Add a "light" affect like a flash light.  

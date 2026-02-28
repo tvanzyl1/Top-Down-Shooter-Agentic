@@ -81,7 +81,12 @@ export default class SpawnerSystem {
         sy = Phaser.Math.Clamp(py + Math.sin(a2) * margin, 0, ARENA_HEIGHT)
         tries++
       }
-      this.scene.spawnEnemy(sx, sy)
+      // decide on enemy type: heavy after score >=100 with low probability
+      let type = 'normal'
+      if (this.scene.score >= 100 && Math.random() < 0.2) {
+        type = 'heavy'
+      }
+      this.scene.spawnEnemy(sx, sy, type)
     }
   }
 }

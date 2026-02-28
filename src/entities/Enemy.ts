@@ -69,3 +69,19 @@ export default class Enemy {
     if (this.sprite && !this.sprite.destroyed) this.sprite.destroy()
   }
 }
+
+// heavy enemy variant with more HP and slower speed
+export class HeavyEnemy extends Enemy {
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y)
+    // increase health and reduce speed
+    this.health = 120
+    this.speed = 60
+    // resize collision circle
+    this.sprite.setCircle(14)
+    // use special texture if available
+    if (this.sprite.setTexture) this.sprite.setTexture('heavy-enemy')
+    // tint red in case texture is missing
+    this.sprite.setTint(0xee4444)
+  }
+}
