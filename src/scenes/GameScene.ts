@@ -33,6 +33,15 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // reset any leftover state when the scene is restarted or started after
+    // being stopped. this ensures arrays from a previous playthrough don't
+    // linger and cause `undefined` sprite errors.
+    this.bullets = []
+    this.enemies = []
+    this.elapsed = 0
+    this.score = 0
+    this.isPaused = false
+
     // world bounds
     this.cameras.main.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
     this.physics.world.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
@@ -58,17 +67,12 @@ export default class GameScene extends Phaser.Scene {
     this.difficulty = new DifficultySystem(this)
 
     // keys
-    this.input.keyboard.on('keydown-R', () => {
-      if (this.player.isDead) {
-        this.scene.restart()
-        this.scene.get('UIScene').scene.restart()
-      }
-    })
-
+    // remove R-based restart, use menu button instead
+    // returning to main menu with ESC (no pause / resume behaviour)
     this.input.keyboard.on('keydown-ESC', () => {
-      this.isPaused = !this.isPaused
-      this.scene.pause('UIScene')
-      if (!this.isPaused) this.scene.resume('UIScene')
+      this.scene.stop('GameScene')
+      this.scene.stop('UIScene')
+      this.scene.start('StartScene')
     })
 
     // physics colliders and overlaps
