@@ -47,10 +47,23 @@ export default class InputSystem {
         this.fireTimer = interval
         // require a weapon with ammo to fire
         if (!this.player.hasAmmo()) return
-        const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, world.x, world.y)
-        const vx = Math.cos(angle) * this.bulletSpeed
-        const vy = Math.sin(angle) * this.bulletSpeed
-        ;(this.scene as any).spawnBullet(this.player.x + Math.cos(angle) * 20, this.player.y + Math.sin(angle) * 20, vx, vy)
+        // compute the raw angle toward the cursor; this is the direction the
+        // bullet should travel. we also feed the same angle to `aimAt` so the
+        // sprite rotation can be offset separately (see Player.aimAt).
+        const rawAngle = Phaser.Math.Angle.Between(this.player.x, this.player.y, world.x, world.y)
+        this.player.aimAt(world.x, world.y)
+
+        // velocity along the raw angle
+        const vx = Math.cos(rawAngle) * this.bulletSpeed
+        const vy = Math.sin(rawAngle) * this.bulletSpeed
+
+        // offset spawn position a bit in front of the player so bullets appear
+        // to come from the gun. tweak 12px to match the drawn graphic.
+        const spawnDist = 12
+        const spawnX = this.player.x + Math.cos(rawAngle) * spawnDist
+        const spawnY = this.player.y + Math.sin(rawAngle) * spawnDist
+
+        ;(this.scene as any).spawnBullet(spawnX, spawnY, vx, vy)
         this.player.consumeAmmo(1)
       }
     } else {
