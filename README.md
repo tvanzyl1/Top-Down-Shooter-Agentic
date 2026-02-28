@@ -22,6 +22,7 @@ Controls
 - Mouse: aim
 - Left mouse (hold): shoot
 - Esc: return to main menu (any time during play or when game over)
+- 1 / 2: switch between pistol and shotgun when available (shotgun pickups appear after score ≥100; shells spawn infrequently only once shotgun has been picked up)
 - Restart button only becomes visible once a game has been started
 
 Project structure
@@ -41,10 +42,10 @@ To Extend
 [x] Make player look different.  
 [x] Make enemies look different.  
 [x] Allow user to go back to main menu from the game.  
-[ ] Make ammo sprite look different.  
-[ ] Make weapon sprite look different.  
-[ ] Only spawn inital ammo and then let some enemies drop ammo on death.  
-[ ] Add new weapons: add a new system or extend `Player` to support variants.  
+[x] Make ammo sprite look different.  
+[x] Make weapon sprite look different.  
+[x] Add new weapons: add a new system or extend `Player` to support variants.  
+[ ] Fix rate of fire of different weapons
 [ ] Add enemy types: extend `Enemy` and update `SpawnerSystem`.  
 [ ] Add powerups: create new entities and spawn logic in `SpawnerSystem`.  
 [ ] Change the game back ground to a dark grey and buildings to a different color.  

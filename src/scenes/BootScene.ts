@@ -67,6 +67,42 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('bullet', bulletSize, bulletSize)
     g.clear()
 
+    // weapon pickup texture (pistol top‑down, 16x16)
+    const wSize = 16
+    g.fillStyle(0x888888)
+    // barrel
+    g.fillRect(2, 6, 10, 4)
+    // grip
+    g.fillRect(8, 10, 4, 4)
+    g.generateTexture('weapon', wSize, wSize)
+    g.clear()
+
+    // shotgun pickup texture (shotgun top‑down, 20x20)
+    const sgSize = 20
+    g.fillStyle(0x555555)
+    // long barrel
+    g.fillRect(2, sgSize / 2 - 2, sgSize - 4, 4)
+    // stock
+    g.fillRect(6, sgSize / 2 + 2, 4, 6)
+    g.generateTexture('shotgun', sgSize, sgSize)
+    g.clear()
+
+    // ammo pickup texture: small box with inner accent (pistol ammo)
+    const aSize = 12
+    g.fillStyle(0x88ff88)
+    g.fillRect(0, 0, aSize, aSize)
+    g.fillStyle(0xffff66)
+    g.fillRect(2, 2, aSize - 4, aSize - 4)
+    g.generateTexture('ammo', aSize, aSize)
+    g.clear()
+
+    // shotgun shell texture (orange square)
+    const sSize = 8
+    g.fillStyle(0xffaa00)
+    g.fillRect(0, 0, sSize, sSize)
+    g.generateTexture('shell', sSize, sSize)
+    g.clear()
+
     // enemy pixel-art (20x20) – similar silhouette to player but with
     // a distinct palette and slightly chunkier features.
     const eSize = 20
@@ -92,12 +128,6 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('enemy', eSize, eSize)
     g.clear()
 
-    // ammo texture: small box
-    const aSize = 16
-    g.fillStyle(0x88ff88)
-    g.fillRect(0, 0, aSize, aSize)
-    g.generateTexture('ammo', aSize, aSize)
-    g.clear()
 
     // building texture (simple block with windows)
     const bSize = 128
