@@ -10,6 +10,9 @@ export default class SpawnerSystem {
   timer = 0
   interval = 2.2
   ammoTimer = 20
+  // additional timers for shotgun-related spawns
+  shellTimer = 0
+  weaponTimer = 0
 
   constructor(scene: GameScene) {
     this.scene = scene
@@ -22,11 +25,29 @@ export default class SpawnerSystem {
       this.spawnWave()
     }
 
-    // ammo spawn timer
+    // ammo spawn timer (pistol shells)
     this.ammoTimer -= dt
     if (this.ammoTimer <= 0) {
       this.ammoTimer = Phaser.Math.FloatBetween(15, 30)
-      if (this.scene && (this.scene as any).createAmmo) (this.scene as any).createAmmo(1)
+      if (this.scene && (this.scene as any).createAmmo) (this.scene as any).createAmmo(1, 'Pistol')
+    }
+
+    // shotgun shell spawn (only after player has picked up a shotgun)
+    if (this.scene.player && this.scene.player.hasShotgun) {
+      this.shellTimer -= dt
+      if (this.shellTimer <= 0) {
+        this.shellTimer = Phaser.Math.FloatBetween(25, 50) // less frequent
+        if (this.scene && (this.scene as any).createAmmo) (this.scene as any).createAmmo(1, 'Shotgun')
+      }
+    }
+
+    // weapon pickup spawn: start once score threshold passed, but only if player hasn't acquired shotgun yet
+    if (this.scene.score >= 100 && !this.scene.player.hasShotgun) {
+      this.weaponTimer -= dt
+      if (this.weaponTimer <= 0) {
+        this.weaponTimer = Phaser.Math.FloatBetween(20, 40)
+        if (this.scene && (this.scene as any).createWeapons) (this.scene as any).createWeapons(1, 'Shotgun')
+      }
     }
   }
 

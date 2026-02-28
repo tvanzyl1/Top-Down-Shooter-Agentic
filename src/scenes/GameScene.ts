@@ -119,8 +119,12 @@ export default class GameScene extends Phaser.Scene {
       if (!a || !a.getData) return
       const aref = a.getData('ref')
       if (!aref) return
-      // grant ammo
-      ;(this.player as any).ammo += aref.amount
+      // grant ammo according to type
+      if (aref.type === 'Shotgun') {
+        ;(this.player as any).shotgunAmmo += aref.amount
+      } else {
+        ;(this.player as any).pistolAmmo += aref.amount
+      }
       if (a.destroy) a.destroy()
     })
     // create a few ammo pickups at start
@@ -148,7 +152,8 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  createWeapons(count: number) {
+  // type: 'Pistol' (default) or 'Shotgun'
+  createWeapons(count: number, type: string = 'Pistol') {
     this['weapons'] = this['weapons'] || []
     const pad = 80
     for (let i = 0; i < count; i++) {
@@ -172,16 +177,18 @@ export default class GameScene extends Phaser.Scene {
         wy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
         tries++
       }
-      const weapon = this.physics.add.sprite(wx, wy, 'bullet') as Phaser.Physics.Arcade.Sprite
-      weapon.setTint(0x88ff88)
+      const tex = type === 'Shotgun' ? 'shotgun' : 'weapon'
+      const weapon = this.physics.add.sprite(wx, wy, tex) as Phaser.Physics.Arcade.Sprite
       weapon.setImmovable(true)
-      weapon.setData('ref', { name: 'Pistol', ammo: 30, destroy: () => weapon.destroy() })
+      const ammoAmt = type === 'Shotgun' ? 8 : 30
+      weapon.setData('ref', { name: type, ammo: ammoAmt, destroy: () => weapon.destroy() })
       this.weaponsGroup.add(weapon)
       this['weapons'].push(weapon)
     }
   }
 
-  createAmmo(count: number) {
+  // type: 'Pistol' or 'Shotgun'
+  createAmmo(count: number, type: string = 'Pistol') {
     this['ammos'] = this['ammos'] || []
     const pad = 80
     for (let i = 0; i < count; i++) {
@@ -205,9 +212,11 @@ export default class GameScene extends Phaser.Scene {
         wy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
         tries++
       }
-      const ammo = this.physics.add.sprite(wx, wy, 'ammo') as Phaser.Physics.Arcade.Sprite
+      const tex = type === 'Shotgun' ? 'shell' : 'ammo'
+      const amount = type === 'Shotgun' ? 5 : 10
+      const ammo = this.physics.add.sprite(wx, wy, tex) as Phaser.Physics.Arcade.Sprite
       ammo.setImmovable(true)
-      ammo.setData('ref', { amount: 10 })
+      ammo.setData('ref', { amount, type })
       this.ammoGroup.add(ammo)
       this['ammos'].push(ammo)
     }

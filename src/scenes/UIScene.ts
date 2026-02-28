@@ -20,7 +20,7 @@ export default class UIScene extends Phaser.Scene {
 
     this.healthBar = this.add.graphics()
     this.healthText = this.add.text(16, 16, 'HP: 100', { font: '16px monospace', color: '#fff' })
-    this.weaponText = this.add.text(16, 64, 'Weapon: None', { font: '14px monospace', color: '#fff' })
+    this.weaponText = this.add.text(16, 64, 'Weapon: None (1/2)', { font: '14px monospace', color: '#fff' })
     this.scoreText = this.add.text(width - 140, 16, 'Score: 0', { font: '16px monospace', color: '#fff' })
     this.timeText = this.add.text(width / 2 - 50, 8, '00:00', { font: '16px monospace', color: '#fff' })
 

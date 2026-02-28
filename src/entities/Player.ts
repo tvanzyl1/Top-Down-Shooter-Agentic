@@ -13,8 +13,13 @@ export default class Player {
   maxHealth = 100
   isDead = false
   invuln = 0
-  weaponName: string | null = null
-  ammo = 0
+  // currently equipped weapon; 'Pistol' or 'Shotgun' (null = unarmed)
+  currentWeapon: string | null = null
+  // ammo counts for each type
+  pistolAmmo = 0
+  shotgunAmmo = 0
+  // once the player has ever picked up a shotgun, shells begin spawning
+  hasShotgun = false
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene
@@ -59,25 +64,73 @@ export default class Player {
   }
 
   equipWeapon(name: string, ammo: number) {
-    this.weaponName = name
-    this.ammo = ammo
-    // swap texture to armed appearance
-    this.sprite.setTexture(name && ammo > 0 ? 'player-armed' : 'player')
+    // add ammo to the appropriate pool
+    if (name === 'Pistol') {
+      this.pistolAmmo += ammo
+    } else if (name === 'Shotgun') {
+      this.shotgunAmmo += ammo
+      this.hasShotgun = true
+    }
+    // equip the weapon immediately
+    this.currentWeapon = name
+    this.updateSpriteTexture()
   }
 
   hasAmmo() {
-    return this.weaponName !== null && this.ammo > 0
+    return this.getAmmoCount() > 0
   }
 
   consumeAmmo(count = 1) {
-    if (this.ammo <= 0) return false
-    this.ammo = Math.max(0, this.ammo - count)
-    if (this.ammo === 0) {
-      // weapon empty but remains equipped (could set to null if desired)
-      // revert to unarmed sprite
+    const w = this.currentWeapon
+    if (!w) return false
+    if (w === 'Pistol') {
+      if (this.pistolAmmo <= 0) return false
+      this.pistolAmmo = Math.max(0, this.pistolAmmo - count)
+    } else if (w === 'Shotgun') {
+      if (this.shotgunAmmo <= 0) return false
+      this.shotgunAmmo = Math.max(0, this.shotgunAmmo - count)
+    }
+    if (this.getAmmoCount() === 0) {
+      // no ammo left for current weapon -> revert to unarmed texture
       this.sprite.setTexture('player')
     }
     return true
+  }
+
+  // return ammo remaining for currently equipped weapon
+  getAmmoCount() {
+    if (this.currentWeapon === 'Shotgun') return this.shotgunAmmo
+    if (this.currentWeapon === 'Pistol') return this.pistolAmmo
+    return 0
+  }
+
+  // change currently equipped weapon if available
+  switchWeapon(name: string) {
+    if (name === 'Shotgun' && !this.hasShotgun) return
+    if (name === 'Pistol' && this.pistolAmmo <= 0) {
+      // if no pistol ammo, but player might still pick it up later
+      this.currentWeapon = null
+      this.updateSpriteTexture()
+      return
+    }
+    this.currentWeapon = name
+    this.updateSpriteTexture()
+  }
+
+  // update sprite texture to armed/unarmed state
+  private updateSpriteTexture() {
+    const hasAmmo = this.getAmmoCount() > 0
+    if (hasAmmo && this.currentWeapon) this.sprite.setTexture('player-armed')
+    else this.sprite.setTexture('player')
+  }
+
+  // compatibility getters so existing UI code works
+  get weaponName() {
+    return this.currentWeapon
+  }
+
+  get ammo() {
+    return this.getAmmoCount()
   }
 
   takeDamage(amount: number) {
