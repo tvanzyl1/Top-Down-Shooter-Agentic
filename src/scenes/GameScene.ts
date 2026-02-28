@@ -31,7 +31,15 @@ export default class GameScene extends Phaser.Scene {
   // graphics for flashlight effect
   darkOverlay!: Phaser.GameObjects.Graphics
   lightMask!: Phaser.GameObjects.Graphics
-  // lightMask removed; not needed since using erase on overlay
+
+  // flashlight runtime state
+  flashEnabled = true
+  // next time (ms) when a flicker may start
+  nextFlickerAt = 0
+  // flicker state
+  isFlickering = false
+  flickerStart = 0
+  flickerDuration = 0
 
   constructor() {
     super({ key: 'GameScene' })
@@ -141,14 +149,16 @@ export default class GameScene extends Phaser.Scene {
     this.darkOverlay = this.add.graphics()
     // sit on top of all game objects
     this.darkOverlay.setDepth(1000)
-    // mask graphic defines the cone; overlay is only visible outside the cone
-    this.lightMask = this.add.graphics()
-    // the mask graphic itself should not be visible on screen
-    this.lightMask.setVisible(false)
+    // We'll draw the overlay and then erase the cone from it every frame.
+    // No visible mask graphics are needed for the erase approach.
 
-    const geomMask = new Phaser.Display.Masks.GeometryMask(this, this.lightMask)
-    geomMask.invertAlpha = true
-    this.darkOverlay.setMask(geomMask)
+    // toggle flashlight with `F`
+    this.input.keyboard.on('keydown-F', () => {
+      this.flashEnabled = !this.flashEnabled
+    })
+
+    // schedule first possible flicker (6–10s)
+    this.nextFlickerAt = this.time.now + Phaser.Math.Between(6000, 10000)
 
   }
 
@@ -254,25 +264,59 @@ export default class GameScene extends Phaser.Scene {
     const vh = cam.worldView.height
     // repaint overlay each frame
     this.darkOverlay.clear()
-    this.darkOverlay.fillStyle(0x000000, 0.6)
-    this.darkOverlay.fillRect(cam.worldView.x, cam.worldView.y, vw, vh)
+      const overlayAlpha = 0.6
+      this.darkOverlay.fillStyle(0x000000, overlayAlpha)
+      this.darkOverlay.fillRect(cam.worldView.x, cam.worldView.y, vw, vh)
 
-    // draw cone on mask (overlay visible outside it)
-    this.lightMask.clear()
-    this.lightMask.fillStyle(0xffffff, 1)
-    const px = this.player.x
-    const py = this.player.y
-    const pointer = this.input.activePointer
-    const world = cam.getWorldPoint(pointer.x, pointer.y)
-    const angle = Phaser.Math.Angle.Between(px, py, world.x, world.y)
-    const len = (this.player as any).aggroRadius || 300
-    const spread = Math.PI / 8
-    this.lightMask.beginPath()
-    this.lightMask.moveTo(px, py)
-    this.lightMask.lineTo(px + Math.cos(angle - spread) * len, py + Math.sin(angle - spread) * len)
-    this.lightMask.lineTo(px + Math.cos(angle + spread) * len, py + Math.sin(angle + spread) * len)
-    this.lightMask.closePath()
-    this.lightMask.fillPath()
+      // determine whether the beam should be visible (handles toggle + flicker)
+      let beamVisible = this.flashEnabled
+      // start flicker occasionally (every ~6–10s)
+      if (this.flashEnabled && !this.isFlickering && time >= this.nextFlickerAt) {
+        this.isFlickering = true
+        this.flickerStart = time
+        this.flickerDuration = Phaser.Math.Between(100, 700) // short jitter burst
+      }
+      if (this.isFlickering) {
+        const fe = time - this.flickerStart
+        if (fe >= this.flickerDuration) {
+          this.isFlickering = false
+          this.nextFlickerAt = time + Phaser.Math.Between(6000, 10000)
+        } else {
+          // rapid on/off to simulate flicker (every ~80ms)
+          beamVisible = (Math.floor(fe / 80) % 2) === 0
+        }
+      }
+
+      if (beamVisible) {
+        const px = this.player.x
+        const py = this.player.y
+        const pointer = this.input.activePointer
+        const world = cam.getWorldPoint(pointer.x, pointer.y)
+        const angle = Phaser.Math.Angle.Between(px, py, world.x, world.y)
+        const len = (this.player as any).aggroRadius || 300
+        const spread = Math.PI / 8
+
+        // draw a core cone + two larger, lower-alpha cones to create soft edges
+        this.darkOverlay.setBlendMode(Phaser.BlendModes.ERASE)
+        // core is slightly transparent and outer cones create a soft feather
+        const cones = [
+          { mul: 1.0, alpha: 0.10 },
+          { mul: 1.06, alpha: 0.05 },
+          { mul: 1.14, alpha: 0.02 }
+        ]
+        for (const c of cones) {
+          const l = len * c.mul
+          this.darkOverlay.fillStyle(0xffffff, c.alpha)
+          this.darkOverlay.beginPath()
+          this.darkOverlay.moveTo(px, py)
+          this.darkOverlay.lineTo(px + Math.cos(angle - spread) * l, py + Math.sin(angle - spread) * l)
+          this.darkOverlay.lineTo(px + Math.cos(angle + spread) * l, py + Math.sin(angle + spread) * l)
+          this.darkOverlay.closePath()
+          this.darkOverlay.fillPath()
+        }
+        // restore normal blending for future drawings
+        this.darkOverlay.setBlendMode(Phaser.BlendModes.NORMAL)
+      }
 
     this.elapsed += dt
     this.inputSystem.update(dt)
@@ -311,6 +355,7 @@ export default class GameScene extends Phaser.Scene {
       time: Math.floor(this.elapsed),
       weapon: (this.player as any).weaponName || null,
       ammo: (this.player as any).ammo || 0
+      ,flashlight: this.flashEnabled
     })
 
     if (this.player.isDead) {

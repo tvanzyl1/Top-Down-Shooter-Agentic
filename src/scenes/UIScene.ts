@@ -9,6 +9,7 @@ export default class UIScene extends Phaser.Scene {
   scoreText!: Phaser.GameObjects.Text
   weaponText!: Phaser.GameObjects.Text
   timeText!: Phaser.GameObjects.Text
+  flashlightText!: Phaser.GameObjects.Text
   overlay!: Phaser.GameObjects.Container
 
   constructor() {
@@ -21,6 +22,7 @@ export default class UIScene extends Phaser.Scene {
     this.healthBar = this.add.graphics()
     this.healthText = this.add.text(16, 16, 'HP: 100', { font: '16px monospace', color: '#fff' })
     this.weaponText = this.add.text(16, 64, 'Weapon: None (1/2)', { font: '14px monospace', color: '#fff' })
+    this.flashlightText = this.add.text(16, 92, 'Flash: ON', { font: '14px monospace', color: '#0f0' })
     this.scoreText = this.add.text(width - 140, 16, 'Score: 0', { font: '16px monospace', color: '#fff' })
     this.timeText = this.add.text(width / 2 - 50, 8, '00:00', { font: '16px monospace', color: '#fff' })
 
@@ -52,6 +54,11 @@ export default class UIScene extends Phaser.Scene {
     this.timeText.setText(`${mm}:${ss}`)
 
     this.weaponText.setText(`Weapon: ${weapon ? weapon : 'None'}  Ammo: ${ammo ?? 0}`)
+    if ((data as any).flashlight !== undefined) {
+      const on = (data as any).flashlight
+      this.flashlightText.setText(`Flash: ${on ? 'ON' : 'OFF'}`)
+      this.flashlightText.setColor(on ? '#0f0' : '#f44')
+    }
 
     // simple bar
     this.healthBar.clear()
