@@ -23,9 +23,8 @@ Controls
 - Left mouse (hold): shoot
 - Esc: return to main menu (any time during play or when game over)
 - 1 / 2: switch between pistol and shotgun when available (shotgun pickups appear after score ≥100; shells spawn infrequently only once shotgun has been picked up)
+- F: Flashlight beam follows cursor; world is darkened outside the cone
 - Heavy enemies (red, more HP) begin appearing occasionally after score ≥100
-- Flashlight beam follows cursor; world is darkened outside the cone
-- Restart button only becomes visible once a game has been started
 
 Project structure
 
@@ -53,6 +52,10 @@ To Extend
 [x] Change the game back ground to a dark grey and buildings to a different color.  
 [x] Add a "light" affect like a flash light.  
 [x] Extend flash light and light affect to make map dark around player.  
+[ ] Bug: Ammo pick up before player has any weapons don't count towards pistol.  
+[ ] Add more random buildings with some lights in some of the windows.  
+[ ] Add a forest map.  
+[ ] Add a desert map.  
 
 Progress so far
 
