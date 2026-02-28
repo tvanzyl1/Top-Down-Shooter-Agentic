@@ -28,6 +28,11 @@ export default class GameScene extends Phaser.Scene {
   score = 0
   isPaused = false
 
+  // graphics for flashlight effect
+  darkOverlay!: Phaser.GameObjects.Graphics
+  lightMask!: Phaser.GameObjects.Graphics
+  // lightMask removed; not needed since using erase on overlay
+
   constructor() {
     super({ key: 'GameScene' })
   }
@@ -45,6 +50,8 @@ export default class GameScene extends Phaser.Scene {
     // world bounds
     this.cameras.main.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
     this.physics.world.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
+    // dark grey background so uncovered areas are visible through the flashlight
+    this.cameras.main.setBackgroundColor(0x202020)
 
     // create player in center
     this.player = new Player(this, ARENA_WIDTH / 2, ARENA_HEIGHT / 2)
@@ -129,6 +136,20 @@ export default class GameScene extends Phaser.Scene {
     })
     // create a few ammo pickups at start
     this.createAmmo(4)
+
+    // flashlight graphics – overlay will be redrawn each frame
+    this.darkOverlay = this.add.graphics()
+    // sit on top of all game objects
+    this.darkOverlay.setDepth(1000)
+    // mask graphic defines the cone; overlay is only visible outside the cone
+    this.lightMask = this.add.graphics()
+    // the mask graphic itself should not be visible on screen
+    this.lightMask.setVisible(false)
+
+    const geomMask = new Phaser.Display.Masks.GeometryMask(this, this.lightMask)
+    geomMask.invertAlpha = true
+    this.darkOverlay.setMask(geomMask)
+
   }
 
   createBuildings(count: number) {
@@ -226,6 +247,32 @@ export default class GameScene extends Phaser.Scene {
     if (this.isPaused) return
     const dt = delta / 1000
     if (this.player.isDead) return
+
+    // flashlight effect: darken world except cone from player toward pointer
+    const cam = this.cameras.main
+    const vw = cam.worldView.width
+    const vh = cam.worldView.height
+    // repaint overlay each frame
+    this.darkOverlay.clear()
+    this.darkOverlay.fillStyle(0x000000, 0.6)
+    this.darkOverlay.fillRect(cam.worldView.x, cam.worldView.y, vw, vh)
+
+    // draw cone on mask (overlay visible outside it)
+    this.lightMask.clear()
+    this.lightMask.fillStyle(0xffffff, 1)
+    const px = this.player.x
+    const py = this.player.y
+    const pointer = this.input.activePointer
+    const world = cam.getWorldPoint(pointer.x, pointer.y)
+    const angle = Phaser.Math.Angle.Between(px, py, world.x, world.y)
+    const len = (this.player as any).aggroRadius || 300
+    const spread = Math.PI / 8
+    this.lightMask.beginPath()
+    this.lightMask.moveTo(px, py)
+    this.lightMask.lineTo(px + Math.cos(angle - spread) * len, py + Math.sin(angle - spread) * len)
+    this.lightMask.lineTo(px + Math.cos(angle + spread) * len, py + Math.sin(angle + spread) * len)
+    this.lightMask.closePath()
+    this.lightMask.fillPath()
 
     this.elapsed += dt
     this.inputSystem.update(dt)
