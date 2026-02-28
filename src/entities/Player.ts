@@ -49,7 +49,9 @@ export default class Player {
 
   aimAt(worldX: number, worldY: number) {
     const angle = Phaser.Math.Angle.Between(this.x, this.y, worldX, worldY)
-    this.sprite.setRotation(angle)
+    // rotate sprite such that its **top** (negative Y local) faces the target
+    // Phaser's rotation aligns the right axis, so subtract π/2
+    this.sprite.setRotation(angle - Math.PI / 2)
   }
 
   setVelocity(vx: number, vy: number) {
@@ -59,6 +61,8 @@ export default class Player {
   equipWeapon(name: string, ammo: number) {
     this.weaponName = name
     this.ammo = ammo
+    // swap texture to armed appearance
+    this.sprite.setTexture(name && ammo > 0 ? 'player-armed' : 'player')
   }
 
   hasAmmo() {
@@ -70,6 +74,8 @@ export default class Player {
     this.ammo = Math.max(0, this.ammo - count)
     if (this.ammo === 0) {
       // weapon empty but remains equipped (could set to null if desired)
+      // revert to unarmed sprite
+      this.sprite.setTexture('player')
     }
     return true
   }

@@ -14,31 +14,82 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    // create player texture: centered triangle
+    // create pixel‑art player textures (24x24) seen from above; one unarmed and one armed
     const g = this.add.graphics({ x: 0, y: 0 })
-    const size = 48
-    const cx = size / 2
-    const cy = size / 2
-    g.fillStyle(0x00ccff)
-    g.beginPath()
-    g.moveTo(cx + 12, cy)
-    g.lineTo(cx - 12, cy - 12)
-    g.lineTo(cx - 12, cy + 12)
-    g.closePath()
-    g.fillPath()
-    g.generateTexture('player', size, size)
+    const pSize = 24
+    const center = pSize / 2
+
+    // ---------------------------------------------------------
+    // unarmed version
+    // ---------------------------------------------------------
+    g.clear()
+    // jacket / torso
+    g.fillStyle(0x553300)
+    g.fillRect(center - 6, center - 6, 12, 12)
+    // head (skin tone)
+    g.fillStyle(0xffddaa)
+    g.fillRect(center - 4, center - 10, 8, 8)
+    // hair
+    g.fillStyle(0x885522)
+    g.fillRect(center - 4, center - 10, 8, 4)
+    // arms (at sides)
+    g.fillStyle(0x553300)
+    g.fillRect(center - 10, center - 4, 4, 8)
+    g.fillRect(center + 6, center - 4, 4, 8)
+    g.generateTexture('player', pSize, pSize)
+
+    // ---------------------------------------------------------
+    // armed version (same base plus guns on top)
+    // ---------------------------------------------------------
+    g.clear()
+    // reuse unarmed drawing steps
+    g.fillStyle(0x553300)
+    g.fillRect(center - 6, center - 6, 12, 12)
+    g.fillStyle(0xffddaa)
+    g.fillRect(center - 4, center - 10, 8, 8)
+    g.fillStyle(0x885522)
+    g.fillRect(center - 4, center - 10, 8, 4)
+    g.fillStyle(0x553300)
+    g.fillRect(center - 10, center - 4, 4, 8)
+    g.fillRect(center + 6, center - 4, 4, 8)
+    // guns (two small dark rectangles in front of the head)
+    g.fillStyle(0x222222)
+    g.fillRect(center - 6, center - 14, 4, 6)
+    g.fillRect(center + 2, center - 14, 4, 6)
+    g.generateTexture('player-armed', pSize, pSize)
     g.clear()
 
-    // bullet
+    // bullet (smaller circle)
+    const bulletSize = 8
     g.fillStyle(0xffff66)
-    g.fillCircle(6, 6, 6)
-    g.generateTexture('bullet', 12, 12)
+    // center at (4,4) radius 4
+    g.fillCircle(4, 4, 4)
+    g.generateTexture('bullet', bulletSize, bulletSize)
     g.clear()
 
-    // enemy
-    g.fillStyle(0xff6666)
-    g.fillCircle(16, 16, 16)
-    g.generateTexture('enemy', 32, 32)
+    // enemy pixel-art (20x20) – similar silhouette to player but with
+    // a distinct palette and slightly chunkier features.
+    const eSize = 20
+    const ec = eSize / 2
+    g.clear()
+    // torso / jacket (dark green)
+    g.fillStyle(0x336633)
+    g.fillRect(ec - 6, ec - 6, 12, 12)
+    // head (pale gray)
+    g.fillStyle(0xcccccc)
+    g.fillRect(ec - 4, ec - 10, 8, 8)
+    // hair/helmet (dark gray)
+    g.fillStyle(0x555555)
+    g.fillRect(ec - 4, ec - 10, 8, 4)
+    // arms (at sides)
+    g.fillStyle(0x336633)
+    g.fillRect(ec - 10, ec - 4, 4, 8)
+    g.fillRect(ec + 6, ec - 4, 4, 8)
+    // legs - simple blocks
+    g.fillStyle(0x222222)
+    g.fillRect(ec - 4, ec + 4, 4, 6)
+    g.fillRect(ec + 0, ec + 4, 4, 6)
+    g.generateTexture('enemy', eSize, eSize)
     g.clear()
 
     // ammo texture: small box

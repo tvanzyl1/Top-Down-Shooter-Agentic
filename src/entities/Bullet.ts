@@ -14,7 +14,8 @@ export default class Bullet {
     this.scene = scene
     this.sprite = scene.physics.add.image(x, y, 'bullet') as Phaser.Physics.Arcade.Image
     this.sprite.setVelocity(vx, vy)
-    this.sprite.setCircle(6)
+    // collision radius half of texture size (4)
+    this.sprite.setCircle(4)
     this.sprite.setData('ref', this)
   }
 
