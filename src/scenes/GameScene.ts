@@ -164,22 +164,71 @@ export default class GameScene extends Phaser.Scene {
 
   createBuildings(count: number) {
     this['buildings'] = this['buildings'] || []
+    const buildingTextures = ['building-small', 'building-medium', 'building', 'building-large']
+    const buildingSizes: { [key: string]: number } = {
+      'building-small': 48,
+      'building-medium': 80,
+      'building': 128,
+      'building-large': 160
+    }
     const pad = 120
     for (let i = 0; i < count; i++) {
       let bx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
       let by = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
-      // avoid spawning too close to player
-      const dist = Phaser.Math.Distance.Between(bx, by, this.player.x, this.player.y)
-      if (dist < 220) {
-        // push further away
-        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2)
-        bx = Phaser.Math.Clamp(this.player.x + Math.cos(angle) * 320, pad, ARENA_WIDTH - pad)
-        by = Phaser.Math.Clamp(this.player.y + Math.sin(angle) * 320, pad, ARENA_HEIGHT - pad)
+      const texture = Phaser.Utils.Array.GetRandom(buildingTextures)
+      const buildingSize = buildingSizes[texture]
+      let collidesWith = true
+      let tries = 0
+
+      // keep trying to find a spawn location until we find one that doesn't overlap
+      while (collidesWith && tries < 50) {
+        collidesWith = false
+        bx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+        by = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+
+        // check if too close to player
+        const dist = Phaser.Math.Distance.Between(bx, by, this.player.x, this.player.y)
+        if (dist < 220) {
+          const angle = Phaser.Math.FloatBetween(0, Math.PI * 2)
+          bx = Phaser.Math.Clamp(this.player.x + Math.cos(angle) * 320, pad, ARENA_WIDTH - pad)
+          by = Phaser.Math.Clamp(this.player.y + Math.sin(angle) * 320, pad, ARENA_HEIGHT - pad)
+        }
+
+        // check if overlaps with existing buildings
+        const halfSize = buildingSize / 2
+        const candidateBounds = {
+          left: bx - halfSize,
+          right: bx + halfSize,
+          top: by - halfSize,
+          bottom: by + halfSize
+        }
+
+        for (const existing of this['buildings']) {
+          if (!existing || !existing.getBounds) continue
+          const bb = existing.getBounds()
+          // add padding for separation
+          const padding = 16
+          if (
+            candidateBounds.left < bb.right + padding &&
+            candidateBounds.right > bb.left - padding &&
+            candidateBounds.top < bb.bottom + padding &&
+            candidateBounds.bottom > bb.top - padding
+          ) {
+            collidesWith = true
+            break
+          }
+        }
+
+        tries++
       }
-      const b = this.buildingsGroup.create(bx, by, 'building') as Phaser.Physics.Arcade.Sprite
-      b.setOrigin(0.5)
-      b.setDepth(-1)
-      this['buildings'].push(b)
+
+      // only spawn if we found a valid location
+      if (!collidesWith) {
+        const b = this.buildingsGroup.create(bx, by, texture) as Phaser.Physics.Arcade.Sprite
+        b.setOrigin(0.5)
+        b.setDepth(-1)
+        this['buildings'].push(b)
+      }
     }
   }
 

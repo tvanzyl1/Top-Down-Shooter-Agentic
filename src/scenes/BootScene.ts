@@ -149,19 +149,40 @@ export default class BootScene extends Phaser.Scene {
     g.clear()
 
 
-    // building texture (simple block with windows)
-    const bSize = 128
-    const bx = bSize / 2
-    const by = bSize / 2
-    g.fillStyle(0x444444)
-    g.fillRect(0, 0, bSize, bSize)
-    g.fillStyle(0x222222)
-    for (let yy = 12; yy < bSize - 12; yy += 24) {
-      for (let xx = 12; xx < bSize - 12; xx += 24) {
-        if (Math.random() > 0.5) g.fillRect(xx, yy, 12, 12)
+    // building textures with varying sizes and lights in windows
+    const buildingSizes = [
+      { key: 'building-small', size: 48, windowOffset: 6, windowSize: 6, windowSpacing: 12 },
+      { key: 'building-medium', size: 80, windowOffset: 8, windowSize: 8, windowSpacing: 16 },
+      { key: 'building', size: 128, windowOffset: 12, windowSize: 12, windowSpacing: 24 },
+      { key: 'building-large', size: 160, windowOffset: 14, windowSize: 14, windowSpacing: 28 }
+    ]
+
+    for (const buildingConfig of buildingSizes) {
+      g.clear()
+      const bSize = buildingConfig.size
+      const colorVariation = Phaser.Math.Between(-20, 20)
+      const baseColor = 0x444444 + (colorVariation << 16) + (colorVariation << 8) + colorVariation
+      
+      g.fillStyle(baseColor)
+      g.fillRect(0, 0, bSize, bSize)
+      
+      // draw windows with some lit
+      const windowOffset = buildingConfig.windowOffset
+      const windowSize = buildingConfig.windowSize
+      const windowSpacing = buildingConfig.windowSpacing
+      
+      for (let yy = windowOffset; yy < bSize - windowOffset; yy += windowSpacing) {
+        for (let xx = windowOffset; xx < bSize - windowOffset; xx += windowSpacing) {
+          // randomly determine if this window is lit (about 40% chance)
+          const isLit = Math.random() > 0.6
+          g.fillStyle(isLit ? 0xffff99 : 0x111111) // yellow light or dark window
+          g.fillRect(xx, yy, windowSize, windowSize)
+        }
       }
+      
+      g.generateTexture(buildingConfig.key, bSize, bSize)
     }
-    g.generateTexture('building', bSize, bSize)
+    
     g.destroy()
 
     // proceed to start menu (textures ready)
