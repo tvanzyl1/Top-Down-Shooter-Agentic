@@ -143,7 +143,6 @@ export default class GameScene extends Phaser.Scene {
       if (a.destroy) a.destroy()
     })
     // create a few ammo pickups at start
-    this.createAmmo(4)
 
     // flashlight graphics – overlay will be redrawn each frame
     this.darkOverlay = this.add.graphics()

@@ -20,6 +20,8 @@ export default class Player {
   shotgunAmmo = 0
   // once the player has ever picked up a shotgun, shells begin spawning
   hasShotgun = false
+  // once the player has ever picked up a pistol, ammo begins spawning
+  hasPistol = false
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene
@@ -67,6 +69,7 @@ export default class Player {
     // add ammo to the appropriate pool
     if (name === 'Pistol') {
       this.pistolAmmo += ammo
+      this.hasPistol = true
     } else if (name === 'Shotgun') {
       this.shotgunAmmo += ammo
       this.hasShotgun = true

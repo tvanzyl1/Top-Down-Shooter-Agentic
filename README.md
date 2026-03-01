@@ -52,7 +52,7 @@ To Extend
 [x] Change the game back ground to a dark grey and buildings to a different color.  
 [x] Add a "light" affect like a flash light.  
 [x] Extend flash light and light affect to make map dark around player.  
-[ ] Bug: Ammo pick up before player has any weapons don't count towards pistol.  
+[x] Bug: Ammo pick up before player has any weapons don't count towards pistol.  
 [x] Add more random buildings with some lights in some of the windows.  
 [ ] Add a forest map.  
 [ ] Add a desert map.  
