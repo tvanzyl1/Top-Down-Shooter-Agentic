@@ -29,7 +29,7 @@ export default class SpawnerSystem {
     this.ammoTimer -= dt
     if (this.ammoTimer <= 0) {
       this.ammoTimer = Phaser.Math.FloatBetween(15, 30)
-      if (this.scene && (this.scene as any).createAmmo) (this.scene as any).createAmmo(1, 'Pistol')
+      if (this.scene.player.hasPistol && (this.scene as any).createAmmo) (this.scene as any).createAmmo(1, 'Pistol')
     }
 
     // shotgun shell spawn (only after player has picked up a shotgun)
