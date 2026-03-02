@@ -62,6 +62,34 @@ export default class StartScene extends Phaser.Scene {
     this.restartBtnBg = restartBtnBg
     this.restartBtnText = restartBtnText
 
+    // how to play box
+    const howToLeft = 40
+    const howToTop = 280
+    const howToWidth = 300
+    const howToHeight = 340
+    const howToBg = this.add.rectangle(howToLeft + howToWidth / 2, howToTop + howToHeight / 2, howToWidth, howToHeight, 0x000000, 0.75)
+      .setStrokeStyle(2, 0x888888)
+    const howToTitle = this.add.text(howToLeft + 16, howToTop + 16, 'HOW TO PLAY', { font: 'bold 16px monospace', color: '#ffff99' })
+    const howToText = this.add.text(howToLeft + 16, howToTop + 44, 
+      `MOVEMENT & AIM:
+WASD - Move around
+Mouse - Aim direction
+
+SHOOTING:
+Left Click (hold) - Shoot
+Requires gun + ammo
+
+WEAPONS:
+Pick up gun icons to equip
+1/2 - Switch weapons
+Ammo spawns after pickup
+
+SPECIAL:
+F - Toggle flashlight
+ESC - Back to menu`,
+      { font: '12px monospace', color: '#ddd', lineSpacing: 4 }
+    )
+
     // footer
     const info = this.add.text(this.scale.width / 2, this.scale.height - 40, 'Click New Game to start', { font: '14px monospace', color: '#ccc' }).setOrigin(0.5)
   }
