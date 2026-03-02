@@ -60,22 +60,12 @@ export default class SpawnerSystem {
     for (let i = 0; i < count; i++) {
       const angle = Phaser.Math.FloatBetween(0, Math.PI * 2)
       const margin = Math.max(cam.width, cam.height) * 0.6
-      // pick a spawn point that is not inside any building
+      // pick a spawn point that is not inside any blocking obstacle
       let sx = Phaser.Math.Clamp(px + Math.cos(angle) * margin, 0, ARENA_WIDTH)
       let sy = Phaser.Math.Clamp(py + Math.sin(angle) * margin, 0, ARENA_HEIGHT)
-      const buildings = (this.scene as any)['buildings'] || []
       let tries = 0
       while (tries < 12) {
-        let collide = false
-        for (const b of buildings) {
-          if (!b || !b.getBounds) continue
-          const bb = b.getBounds()
-          if (sx > bb.left - 24 && sx < bb.right + 24 && sy > bb.top - 24 && sy < bb.bottom + 24) {
-            collide = true
-            break
-          }
-        }
-        if (!collide) break
+        if (!(this.scene as any).isInsideObstacle || !(this.scene as any).isInsideObstacle(sx, sy, 24)) break
         const a2 = Phaser.Math.FloatBetween(0, Math.PI * 2)
         sx = Phaser.Math.Clamp(px + Math.cos(a2) * margin, 0, ARENA_WIDTH)
         sy = Phaser.Math.Clamp(py + Math.sin(a2) * margin, 0, ARENA_HEIGHT)

@@ -15,7 +15,9 @@ export default class GameScene extends Phaser.Scene {
   player!: Player
   bullets: Bullet[] = []
   enemies: Enemy[] = []
+  trees: Phaser.GameObjects.Image[] = []
   buildingsGroup!: Phaser.Physics.Arcade.StaticGroup
+  treeTrunksGroup!: Phaser.Physics.Arcade.StaticGroup
   enemiesGroup!: Phaser.Physics.Arcade.Group
   bulletsGroup!: Phaser.Physics.Arcade.Group
   weaponsGroup!: Phaser.Physics.Arcade.Group
@@ -51,6 +53,7 @@ export default class GameScene extends Phaser.Scene {
     // linger and cause `undefined` sprite errors.
     this.bullets = []
     this.enemies = []
+    this.trees = []
     this.elapsed = 0
     this.score = 0
     this.isPaused = false
@@ -66,11 +69,13 @@ export default class GameScene extends Phaser.Scene {
 
     // physics groups
     this.buildingsGroup = this.physics.add.staticGroup()
+    this.treeTrunksGroup = this.physics.add.staticGroup()
     this.enemiesGroup = this.physics.add.group()
     this.bulletsGroup = this.physics.add.group()
 
     // generate simple buildings for atmosphere (use static group)
     this.createBuildings(70)
+    this.createTrees(110)
 
     // camera follows player sprite
     this.cameras.main.startFollow(this.player.sprite)
@@ -92,12 +97,17 @@ export default class GameScene extends Phaser.Scene {
 
     // physics colliders and overlaps
     this.physics.add.collider(this.player.sprite, this.buildingsGroup)
+    this.physics.add.collider(this.player.sprite, this.treeTrunksGroup)
     this.physics.add.collider(this.enemiesGroup, this.buildingsGroup)
+    this.physics.add.collider(this.enemiesGroup, this.treeTrunksGroup)
     this.physics.add.collider(this.player.sprite, this.enemiesGroup)
     this.physics.add.collider(this.enemiesGroup, this.enemiesGroup)
 
     // bullets collide with buildings -> destroy bullet
     this.physics.add.collider(this.bulletsGroup, this.buildingsGroup, (b: any) => {
+      if (b && b.destroy) b.destroy()
+    })
+    this.physics.add.collider(this.bulletsGroup, this.treeTrunksGroup, (b: any) => {
       if (b && b.destroy) b.destroy()
     })
 
@@ -231,6 +241,102 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  createTrees(count: number) {
+    this.trees = []
+    const canopySize = 32
+    const canopyHalf = canopySize / 2
+    const pad = 48
+
+    for (let i = 0; i < count; i++) {
+      let tx = 0
+      let ty = 0
+      let blocked = true
+      let tries = 0
+
+      while (blocked && tries < 40) {
+        blocked = false
+        tx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+        ty = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+
+        const canopyBounds = {
+          left: tx - canopyHalf,
+          right: tx + canopyHalf,
+          top: ty - canopyHalf,
+          bottom: ty + canopyHalf
+        }
+
+        const buildings = this['buildings'] || []
+        for (const building of buildings) {
+          if (!building || !building.getBounds) continue
+          const bb = building.getBounds()
+          const padding = 12
+          if (
+            canopyBounds.left < bb.right + padding &&
+            canopyBounds.right > bb.left - padding &&
+            canopyBounds.top < bb.bottom + padding &&
+            canopyBounds.bottom > bb.top - padding
+          ) {
+            blocked = true
+            break
+          }
+        }
+
+        if (blocked) {
+          tries++
+          continue
+        }
+
+        for (const existingTrunk of this.treeTrunksGroup.getChildren()) {
+          if (!existingTrunk || !(existingTrunk as any).getBounds) continue
+          const tb = (existingTrunk as any).getBounds()
+          const padding = 18
+          if (
+            canopyBounds.left < tb.right + padding &&
+            canopyBounds.right > tb.left - padding &&
+            canopyBounds.top < tb.bottom + padding &&
+            canopyBounds.bottom > tb.top - padding
+          ) {
+            blocked = true
+            break
+          }
+        }
+
+        tries++
+      }
+
+      if (!blocked) {
+        const trunk = this.treeTrunksGroup.create(tx, ty + 8, 'tree-trunk') as Phaser.Physics.Arcade.Sprite
+        trunk.setDepth(-1)
+        trunk.setOrigin(0.5)
+
+        const canopy = this.add.image(tx, ty - 6, 'tree-canopy')
+        canopy.setDepth(5)
+        this.trees.push(canopy)
+      }
+    }
+  }
+
+  isInsideObstacle(x: number, y: number, padding = 16) {
+    const buildings = this['buildings'] || []
+    for (const b of buildings) {
+      if (!b || !b.getBounds) continue
+      const bb = b.getBounds()
+      if (x > bb.left - padding && x < bb.right + padding && y > bb.top - padding && y < bb.bottom + padding) {
+        return true
+      }
+    }
+
+    for (const trunk of this.treeTrunksGroup.getChildren()) {
+      if (!trunk || !(trunk as any).getBounds) continue
+      const tb = (trunk as any).getBounds()
+      if (x > tb.left - padding && x < tb.right + padding && y > tb.top - padding && y < tb.bottom + padding) {
+        return true
+      }
+    }
+
+    return false
+  }
+
   // type: 'Pistol' (default) or 'Shotgun'
   createWeapons(count: number, type: string = 'Pistol') {
     this['weapons'] = this['weapons'] || []
@@ -238,20 +344,10 @@ export default class GameScene extends Phaser.Scene {
     for (let i = 0; i < count; i++) {
       let wx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
       let wy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
-      // ensure not inside building
+      // ensure not inside a blocking obstacle
       let tries = 0
-      const buildings = this['buildings'] || []
       while (tries < 20) {
-        let collides = false
-        for (const b of buildings) {
-          if (!b || !b.getBounds) continue
-          const bb = b.getBounds()
-          if (wx > bb.left - 16 && wx < bb.right + 16 && wy > bb.top - 16 && wy < bb.bottom + 16) {
-            collides = true
-            break
-          }
-        }
-        if (!collides) break
+        if (!this.isInsideObstacle(wx, wy, 16)) break
         wx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
         wy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
         tries++
@@ -273,20 +369,10 @@ export default class GameScene extends Phaser.Scene {
     for (let i = 0; i < count; i++) {
       let wx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
       let wy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
-      // ensure not inside building
+      // ensure not inside a blocking obstacle
       let tries = 0
-      const buildings = this['buildings'] || []
       while (tries < 20) {
-        let collides = false
-        for (const b of buildings) {
-          if (!b || !b.getBounds) continue
-          const bb = b.getBounds()
-          if (wx > bb.left - 16 && wx < bb.right + 16 && wy > bb.top - 16 && wy < bb.bottom + 16) {
-            collides = true
-            break
-          }
-        }
-        if (!collides) break
+        if (!this.isInsideObstacle(wx, wy, 16)) break
         wx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
         wy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
         tries++

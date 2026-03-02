@@ -103,6 +103,29 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('shell', sSize, sSize)
     g.clear()
 
+    // split tree art into a small solid trunk and a canopy that can render above actors
+    const trunkWidth = 12
+    const trunkHeight = 16
+    g.fillStyle(0x5c3b1e)
+    g.fillRect(0, 0, trunkWidth, trunkHeight)
+    g.fillStyle(0x6f4826)
+    g.fillRect(2, 0, 2, trunkHeight)
+    g.fillRect(8, 0, 2, trunkHeight)
+    g.generateTexture('tree-trunk', trunkWidth, trunkHeight)
+    g.clear()
+
+    const canopySize = 32
+    const cc = canopySize / 2
+    g.fillStyle(0x1f6f3a)
+    g.fillCircle(cc, cc + 2, 10)
+    g.fillStyle(0x2f8c4b)
+    g.fillCircle(cc - 6, cc - 1, 8)
+    g.fillCircle(cc + 6, cc - 1, 8)
+    g.fillStyle(0x46a85f)
+    g.fillCircle(cc, cc - 6, 7)
+    g.generateTexture('tree-canopy', canopySize, canopySize)
+    g.clear()
+
     // enemy pixel-art (20x20) – similar silhouette to player but with
     // a distinct palette and slightly chunkier features.
     const eSize = 20
