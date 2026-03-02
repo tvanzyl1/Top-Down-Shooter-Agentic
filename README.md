@@ -54,7 +54,7 @@ To Extend
 [x] Extend flash light and light affect to make map dark around player.  
 [x] Bug: Ammo pick up before player has any weapons don't count towards pistol.  
 [x] Add more random buildings with some lights in some of the windows.  
-[ ] Add a forest map.  
+[x] Add a forest map.  
 [ ] Add a desert map.  
 
 Progress so far
