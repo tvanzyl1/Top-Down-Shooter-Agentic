@@ -12,10 +12,13 @@ import DifficultySystem from '../systems/DifficultySystem'
 import { ARENA_WIDTH, ARENA_HEIGHT } from '../game/config'
 
 export default class GameScene extends Phaser.Scene {
+  mapType: 'city' | 'forest' = 'city'
   player!: Player
   bullets: Bullet[] = []
   enemies: Enemy[] = []
   trees: Phaser.GameObjects.Image[] = []
+  swampZones: Phaser.Geom.Rectangle[] = []
+  swampPatches: Phaser.GameObjects.Rectangle[] = []
   buildingsGroup!: Phaser.Physics.Arcade.StaticGroup
   treeTrunksGroup!: Phaser.Physics.Arcade.StaticGroup
   enemiesGroup!: Phaser.Physics.Arcade.Group
@@ -47,6 +50,10 @@ export default class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' })
   }
 
+  init(data: { mapType?: string }) {
+    this.mapType = data && data.mapType === 'Forest' ? 'forest' : 'city'
+  }
+
   create() {
     // reset any leftover state when the scene is restarted or started after
     // being stopped. this ensures arrays from a previous playthrough don't
@@ -54,6 +61,11 @@ export default class GameScene extends Phaser.Scene {
     this.bullets = []
     this.enemies = []
     this.trees = []
+    this.swampZones = []
+    this.swampPatches = []
+    this['buildings'] = []
+    this['weapons'] = []
+    this['ammos'] = []
     this.elapsed = 0
     this.score = 0
     this.isPaused = false
@@ -61,8 +73,8 @@ export default class GameScene extends Phaser.Scene {
     // world bounds
     this.cameras.main.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
     this.physics.world.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
-    // dark grey background so uncovered areas are visible through the flashlight
-    this.cameras.main.setBackgroundColor(0x202020)
+    // darker green in the forest, grey in the city
+    this.cameras.main.setBackgroundColor(this.mapType === 'forest' ? 0x18301c : 0x202020)
 
     // create player in center
     this.player = new Player(this, ARENA_WIDTH / 2, ARENA_HEIGHT / 2)
@@ -73,9 +85,7 @@ export default class GameScene extends Phaser.Scene {
     this.enemiesGroup = this.physics.add.group()
     this.bulletsGroup = this.physics.add.group()
 
-    // generate simple buildings for atmosphere (use static group)
-    this.createBuildings(70)
-    this.createTrees(110)
+    this.createMapLayout()
 
     // camera follows player sprite
     this.cameras.main.startFollow(this.player.sprite)
@@ -171,6 +181,17 @@ export default class GameScene extends Phaser.Scene {
 
   }
 
+  createMapLayout() {
+    if (this.mapType === 'forest') {
+      this.createSwamps(45)
+      this.createTrees(280)
+      return
+    }
+
+    this.createBuildings(70)
+    this.createTrees(110)
+  }
+
   createBuildings(count: number) {
     this['buildings'] = this['buildings'] || []
     const buildingTextures = ['building-small', 'building-medium', 'building', 'building-large']
@@ -238,6 +259,65 @@ export default class GameScene extends Phaser.Scene {
         b.setDepth(-1)
         this['buildings'].push(b)
       }
+    }
+  }
+
+  createSwamps(count: number) {
+    this.swampZones = []
+    this.swampPatches = []
+    const pad = 120
+
+    for (let i = 0; i < count; i++) {
+      let width = Phaser.Math.Between(110, 220)
+      let height = Phaser.Math.Between(90, 180)
+      let x = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+      let y = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+      let tries = 0
+      let valid = false
+
+      while (tries < 20) {
+        const rect = new Phaser.Geom.Rectangle(x - width / 2, y - height / 2, width, height)
+        const tooCloseToPlayer = rect.contains(this.player.x, this.player.y)
+        let overlaps = false
+
+        for (const zone of this.swampZones) {
+          if (Phaser.Geom.Intersects.RectangleToRectangle(rect, zone)) {
+            overlaps = true
+            break
+          }
+        }
+
+        if (!tooCloseToPlayer && !overlaps) {
+          valid = true
+          break
+        }
+
+        width = Phaser.Math.Between(110, 220)
+        height = Phaser.Math.Between(90, 180)
+        x = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+        y = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+        tries++
+      }
+
+      if (!valid) continue
+
+      const zone = new Phaser.Geom.Rectangle(x - width / 2, y - height / 2, width, height)
+      this.swampZones.push(zone)
+
+      const patch = this.add.rectangle(x, y, width, height, 0x315f2f, 0.34)
+      patch.setDepth(-3)
+      this.swampPatches.push(patch)
+
+      const innerPatch = this.add.rectangle(
+        x + Phaser.Math.Between(-18, 18),
+        y + Phaser.Math.Between(-18, 18),
+        Math.max(48, width * 0.55),
+        Math.max(40, height * 0.55),
+        0x4d7f3b,
+        0.22
+      )
+      innerPatch.setDepth(-3)
+      this.swampPatches.push(innerPatch)
     }
   }
 
@@ -335,6 +415,18 @@ export default class GameScene extends Phaser.Scene {
     }
 
     return false
+  }
+
+  isInsideSwamp(x: number, y: number) {
+    for (const zone of this.swampZones) {
+      if (zone.contains(x, y)) return true
+    }
+    return false
+  }
+
+  getMovementSpeedMultiplier() {
+    if (this.mapType !== 'forest') return 1
+    return this.isInsideSwamp(this.player.x, this.player.y) ? 0.58 : 1
   }
 
   // type: 'Pistol' (default) or 'Shotgun'

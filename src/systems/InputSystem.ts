@@ -40,7 +40,8 @@ export default class InputSystem {
       mx /= len
       my /= len
     }
-    this.player.setVelocity(mx * this.player.speed, my * this.player.speed)
+    const speedMultiplier = (this.scene as any).getMovementSpeedMultiplier ? (this.scene as any).getMovementSpeedMultiplier() : 1
+    this.player.setVelocity(mx * this.player.speed * speedMultiplier, my * this.player.speed * speedMultiplier)
 
     // handle weapon switching keys
     if (Phaser.Input.Keyboard.JustDown(this.key1)) {
