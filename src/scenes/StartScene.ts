@@ -8,7 +8,7 @@ export default class StartScene extends Phaser.Scene {
   restartBtnText!: Phaser.GameObjects.Text
   mapValueText!: Phaser.GameObjects.Text
   mapOptionContainer!: Phaser.GameObjects.Container
-  selectedMap: 'City' | 'Forest' = 'City'
+  selectedMap: 'City' | 'Forest' | 'Desert' = 'City'
 
   constructor() {
     super({ key: 'StartScene' })
@@ -71,10 +71,11 @@ export default class StartScene extends Phaser.Scene {
 
     this.mapOptionContainer = this.add.container(0, -18)
     this.mapOptionContainer.setVisible(false)
-    const optionBg = this.add.rectangle(0, 0, buttonWidth, 92, 0x111111, 0.98).setStrokeStyle(2, 0x88bb88)
-    const cityOption = this.createMapOption(-22, 'City')
-    const forestOption = this.createMapOption(22, 'Forest')
-    this.mapOptionContainer.add([optionBg, ...cityOption, ...forestOption])
+    const optionBg = this.add.rectangle(0, 0, buttonWidth, 128, 0x111111, 0.98).setStrokeStyle(2, 0x88bb88)
+    const cityOption = this.createMapOption(-36, 'City')
+    const forestOption = this.createMapOption(0, 'Forest')
+    const desertOption = this.createMapOption(36, 'Desert')
+    this.mapOptionContainer.add([optionBg, ...cityOption, ...forestOption, ...desertOption])
 
     menu.add([
       mapLabel,
@@ -113,6 +114,7 @@ WEAPONS:
 Pick up gun icons to equip
 1/2 - Switch weapons
 Ammo spawns after pickup
+Health packs heal 20 HP
 
 SPECIAL:
 F - Toggle flashlight
@@ -152,13 +154,13 @@ ESC - Back to menu`,
     this.mapOptionContainer.setVisible(!this.mapOptionContainer.visible)
   }
 
-  private setSelectedMap(map: 'City' | 'Forest') {
+  private setSelectedMap(map: 'City' | 'Forest' | 'Desert') {
     this.selectedMap = map
     this.mapValueText.setText(map)
     this.mapOptionContainer.setVisible(false)
   }
 
-  private createMapOption(y: number, map: 'City' | 'Forest') {
+  private createMapOption(y: number, map: 'City' | 'Forest' | 'Desert') {
     const width = 276
     const bg = this.add.rectangle(0, y, width, 36, 0x244024, 0.9).setStrokeStyle(1, 0xaaddaa)
     const text = this.add.text(0, y, map, { font: '16px monospace', color: '#ffffff' }).setOrigin(0.5)

@@ -13,6 +13,7 @@ export default class SpawnerSystem {
   // additional timers for shotgun-related spawns
   shellTimer = 0
   weaponTimer = 0
+  healthPackTimer = 12
 
   constructor(scene: GameScene) {
     this.scene = scene
@@ -47,6 +48,14 @@ export default class SpawnerSystem {
       if (this.weaponTimer <= 0) {
         this.weaponTimer = Phaser.Math.FloatBetween(20, 40)
         if (this.scene && (this.scene as any).createWeapons) (this.scene as any).createWeapons(1, 'Shotgun')
+      }
+    }
+
+    if (this.scene.healthPackGroup && this.scene.healthPackGroup.countActive(true) === 0) {
+      this.healthPackTimer -= dt
+      if (this.healthPackTimer <= 0) {
+        const created = (this.scene as any).createHealthPack ? (this.scene as any).createHealthPack() : false
+        if (created) this.healthPackTimer = 0
       }
     }
   }

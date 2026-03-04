@@ -103,6 +103,16 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('shell', sSize, sSize)
     g.clear()
 
+    // health pack pickup texture: red square with a white cross
+    const hpSize = 14
+    g.fillStyle(0xcc3333)
+    g.fillRect(0, 0, hpSize, hpSize)
+    g.fillStyle(0xffffff)
+    g.fillRect(5, 2, 4, 10)
+    g.fillRect(2, 5, 10, 4)
+    g.generateTexture('health-pack', hpSize, hpSize)
+    g.clear()
+
     // split tree art into a small solid trunk and a canopy that can render above actors
     const trunkWidth = 12
     const trunkHeight = 16

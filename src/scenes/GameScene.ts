@@ -12,19 +12,23 @@ import DifficultySystem from '../systems/DifficultySystem'
 import { ARENA_WIDTH, ARENA_HEIGHT } from '../game/config'
 
 export default class GameScene extends Phaser.Scene {
-  mapType: 'city' | 'forest' = 'city'
+  mapType: 'city' | 'forest' | 'desert' = 'city'
   player!: Player
   bullets: Bullet[] = []
   enemies: Enemy[] = []
   trees: Phaser.GameObjects.Image[] = []
   swampZones: Phaser.Geom.Rectangle[] = []
   swampPatches: Phaser.GameObjects.Rectangle[] = []
+  sandZones: Phaser.Geom.Rectangle[] = []
+  sandPatches: Phaser.GameObjects.Rectangle[] = []
+  oasisPatches: Phaser.GameObjects.Ellipse[] = []
   buildingsGroup!: Phaser.Physics.Arcade.StaticGroup
   treeTrunksGroup!: Phaser.Physics.Arcade.StaticGroup
   enemiesGroup!: Phaser.Physics.Arcade.Group
   bulletsGroup!: Phaser.Physics.Arcade.Group
   weaponsGroup!: Phaser.Physics.Arcade.Group
   ammoGroup!: Phaser.Physics.Arcade.Group
+  healthPackGroup!: Phaser.Physics.Arcade.Group
   inputSystem!: InputSystem
   spawner!: SpawnerSystem
   collision!: CollisionSystem
@@ -51,7 +55,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   init(data: { mapType?: string }) {
-    this.mapType = data && data.mapType === 'Forest' ? 'forest' : 'city'
+    if (data && data.mapType === 'Forest') this.mapType = 'forest'
+    else if (data && data.mapType === 'Desert') this.mapType = 'desert'
+    else this.mapType = 'city'
   }
 
   create() {
@@ -63,6 +69,9 @@ export default class GameScene extends Phaser.Scene {
     this.trees = []
     this.swampZones = []
     this.swampPatches = []
+    this.sandZones = []
+    this.sandPatches = []
+    this.oasisPatches = []
     this['buildings'] = []
     this['weapons'] = []
     this['ammos'] = []
@@ -73,8 +82,8 @@ export default class GameScene extends Phaser.Scene {
     // world bounds
     this.cameras.main.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
     this.physics.world.setBounds(0, 0, ARENA_WIDTH, ARENA_HEIGHT)
-    // darker green in the forest, grey in the city
-    this.cameras.main.setBackgroundColor(this.mapType === 'forest' ? 0x18301c : 0x202020)
+    // darker green in the forest, sandy tan in the desert, grey in the city
+    this.cameras.main.setBackgroundColor(this.mapType === 'forest' ? 0x18301c : this.mapType === 'desert' ? 0x8a7443 : 0x202020)
 
     // create player in center
     this.player = new Player(this, ARENA_WIDTH / 2, ARENA_HEIGHT / 2)
@@ -165,6 +174,18 @@ export default class GameScene extends Phaser.Scene {
     // create a few ammo pickups at start
 
     // flashlight graphics – overlay will be redrawn each frame
+    // health pack pickup
+    this.healthPackGroup = this.physics.add.group()
+    this.physics.add.overlap(this.player.sprite, this.healthPackGroup, (p: any, hp: any) => {
+      if (!hp || !hp.getData) return
+      const href = hp.getData('ref')
+      if (!href) return
+      const healed = this.player.heal(href.amount ?? 20)
+      if (healed <= 0) return
+      if (hp.destroy) hp.destroy()
+      if (this.spawner) this.spawner.healthPackTimer = 20
+    })
+
     this.darkOverlay = this.add.graphics()
     // sit on top of all game objects
     this.darkOverlay.setDepth(1000)
@@ -188,8 +209,106 @@ export default class GameScene extends Phaser.Scene {
       return
     }
 
+    if (this.mapType === 'desert') {
+      this.createLooseSand(24)
+      this.createOasis()
+      return
+    }
+
     this.createBuildings(70)
     this.createTrees(110)
+  }
+
+  createLooseSand(count: number) {
+    this.sandZones = []
+    this.sandPatches = []
+    const pad = 120
+
+    for (let i = 0; i < count; i++) {
+      let width = Phaser.Math.Between(130, 260)
+      let height = Phaser.Math.Between(110, 210)
+      let x = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+      let y = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+      let tries = 0
+      let valid = false
+
+      while (tries < 20) {
+        const rect = new Phaser.Geom.Rectangle(x - width / 2, y - height / 2, width, height)
+        const tooCloseToPlayer = rect.contains(this.player.x, this.player.y)
+        let overlaps = false
+
+        for (const zone of this.sandZones) {
+          if (Phaser.Geom.Intersects.RectangleToRectangle(rect, zone)) {
+            overlaps = true
+            break
+          }
+        }
+
+        if (!tooCloseToPlayer && !overlaps) {
+          valid = true
+          break
+        }
+
+        width = Phaser.Math.Between(130, 260)
+        height = Phaser.Math.Between(110, 210)
+        x = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+        y = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+        tries++
+      }
+
+      if (!valid) continue
+
+      const zone = new Phaser.Geom.Rectangle(x - width / 2, y - height / 2, width, height)
+      this.sandZones.push(zone)
+
+      const patch = this.add.rectangle(x, y, width, height, 0xc39a5b, 0.3)
+      patch.setDepth(-3)
+      this.sandPatches.push(patch)
+
+      const innerPatch = this.add.rectangle(
+        x + Phaser.Math.Between(-20, 20),
+        y + Phaser.Math.Between(-20, 20),
+        Math.max(60, width * 0.6),
+        Math.max(50, height * 0.6),
+        0xd8b06a,
+        0.2
+      )
+      innerPatch.setDepth(-3)
+      this.sandPatches.push(innerPatch)
+    }
+  }
+
+  createOasis() {
+    const pad = 240
+    let ox = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+    let oy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+
+    if (Phaser.Math.Distance.Between(ox, oy, this.player.x, this.player.y) < 260) {
+      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2)
+      ox = Phaser.Math.Clamp(this.player.x + Math.cos(angle) * 420, pad, ARENA_WIDTH - pad)
+      oy = Phaser.Math.Clamp(this.player.y + Math.sin(angle) * 420, pad, ARENA_HEIGHT - pad)
+    }
+
+    const shore = this.add.ellipse(ox, oy, 230, 150, 0xb89b5a, 0.45)
+    shore.setDepth(-5)
+    this.oasisPatches.push(shore)
+
+    const grass = this.add.ellipse(ox, oy, 200, 130, 0x5c8a43, 0.28)
+    grass.setDepth(-4)
+    this.oasisPatches.push(grass)
+
+    const water = this.add.ellipse(ox, oy, 170, 110, 0x2f9db1, 0.9)
+    water.setDepth(-4)
+    this.oasisPatches.push(water)
+
+    const treeCount = Phaser.Math.Between(6, 9)
+    for (let i = 0; i < treeCount; i++) {
+      const angle = (Math.PI * 2 * i) / treeCount + Phaser.Math.FloatBetween(-0.22, 0.22)
+      const radius = Phaser.Math.Between(85, 125)
+      const tx = Phaser.Math.Clamp(ox + Math.cos(angle) * radius, 40, ARENA_WIDTH - 40)
+      const ty = Phaser.Math.Clamp(oy + Math.sin(angle) * radius, 40, ARENA_HEIGHT - 40)
+      this.spawnTreeAt(tx, ty)
+    }
   }
 
   createBuildings(count: number) {
@@ -396,6 +515,16 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  spawnTreeAt(x: number, y: number) {
+    const trunk = this.treeTrunksGroup.create(x, y + 8, 'tree-trunk') as Phaser.Physics.Arcade.Sprite
+    trunk.setDepth(-1)
+    trunk.setOrigin(0.5)
+
+    const canopy = this.add.image(x, y - 6, 'tree-canopy')
+    canopy.setDepth(5)
+    this.trees.push(canopy)
+  }
+
   isInsideObstacle(x: number, y: number, padding = 16) {
     const buildings = this['buildings'] || []
     for (const b of buildings) {
@@ -424,9 +553,17 @@ export default class GameScene extends Phaser.Scene {
     return false
   }
 
+  isInsideLooseSand(x: number, y: number) {
+    for (const zone of this.sandZones) {
+      if (zone.contains(x, y)) return true
+    }
+    return false
+  }
+
   getMovementSpeedMultiplier() {
-    if (this.mapType !== 'forest') return 1
-    return this.isInsideSwamp(this.player.x, this.player.y) ? 0.58 : 1
+    if (this.mapType === 'forest') return this.isInsideSwamp(this.player.x, this.player.y) ? 0.58 : 1
+    if (this.mapType === 'desert') return this.isInsideLooseSand(this.player.x, this.player.y) ? 0.72 : 1
+    return 1
   }
 
   // type: 'Pistol' (default) or 'Shotgun'
@@ -477,6 +614,28 @@ export default class GameScene extends Phaser.Scene {
       this.ammoGroup.add(ammo)
       this['ammos'].push(ammo)
     }
+  }
+
+  createHealthPack() {
+    if (this.healthPackGroup && this.healthPackGroup.countActive(true) > 0) return false
+
+    const pad = 80
+    let hx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+    let hy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+    let tries = 0
+
+    while (tries < 20) {
+      if (!this.isInsideObstacle(hx, hy, 16)) break
+      hx = Phaser.Math.Between(pad, ARENA_WIDTH - pad)
+      hy = Phaser.Math.Between(pad, ARENA_HEIGHT - pad)
+      tries++
+    }
+
+    const healthPack = this.physics.add.sprite(hx, hy, 'health-pack') as Phaser.Physics.Arcade.Sprite
+    healthPack.setImmovable(true)
+    healthPack.setData('ref', { amount: 20 })
+    this.healthPackGroup.add(healthPack)
+    return true
   }
 
   update(time: number, delta: number) {
