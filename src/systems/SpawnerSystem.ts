@@ -82,7 +82,9 @@ export default class SpawnerSystem {
       }
       // decide on enemy type: heavy after score >=100 with low probability
       let type = 'normal'
-      if (this.scene.score >= 100 && Math.random() < 0.2) {
+      if (this.scene.score >= 200 && Math.random() < 0.18) {
+        type = 'shooter'
+      } else if (this.scene.score >= 100 && Math.random() < 0.2) {
         type = 'heavy'
       }
       this.scene.spawnEnemy(sx, sy, type)

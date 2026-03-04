@@ -67,6 +67,12 @@ export default class BootScene extends Phaser.Scene {
     g.generateTexture('bullet', bulletSize, bulletSize)
     g.clear()
 
+    const enemyBulletSize = 8
+    g.fillStyle(0xffcc33)
+    g.fillRect(0, 0, enemyBulletSize, enemyBulletSize)
+    g.generateTexture('enemy-bullet', enemyBulletSize, enemyBulletSize)
+    g.clear()
+
     // weapon pickup texture (pistol top‑down, 16x16)
     const wSize = 16
     g.fillStyle(0x888888)

@@ -9,14 +9,25 @@ export default class Bullet {
   lifetime = 1.5
   isDead = false
   damage = 25
+  owner: 'player' | 'enemy' = 'player'
 
-  constructor(scene: Phaser.Scene, x: number, y: number, vx: number, vy: number) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    vx: number,
+    vy: number,
+    texture: string = 'bullet',
+    owner: 'player' | 'enemy' = 'player'
+  ) {
     this.scene = scene
-    this.sprite = scene.physics.add.image(x, y, 'bullet') as Phaser.Physics.Arcade.Image
+    this.owner = owner
+    this.sprite = scene.physics.add.image(x, y, texture) as Phaser.Physics.Arcade.Image
     this.sprite.setVelocity(vx, vy)
     // collision radius half of texture size (4)
     this.sprite.setCircle(4)
     this.sprite.setData('ref', this)
+    this.sprite.setData('owner', owner)
   }
 
   update(dt: number) {

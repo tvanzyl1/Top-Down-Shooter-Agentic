@@ -3,7 +3,7 @@
 */
 import Phaser from 'phaser'
 import Player from '../entities/Player'
-import Enemy, { HeavyEnemy } from '../entities/Enemy'
+import Enemy, { HeavyEnemy, ShootingEnemy } from '../entities/Enemy'
 import Bullet from '../entities/Bullet'
 import InputSystem from '../systems/InputSystem'
 import SpawnerSystem from '../systems/SpawnerSystem'
@@ -128,6 +128,16 @@ export default class GameScene extends Phaser.Scene {
     })
     this.physics.add.collider(this.bulletsGroup, this.treeTrunksGroup, (b: any) => {
       if (b && b.destroy) b.destroy()
+    })
+
+    this.physics.add.overlap(this.bulletsGroup, this.player.sprite, (bulletObj: any) => {
+      if (!bulletObj || !bulletObj.getData) return
+      const owner = bulletObj.getData('owner')
+      if (owner !== 'enemy') return
+      const bRef = bulletObj.getData('ref')
+      if (bRef && bRef.damage) this.player.receiveDamage(bRef.damage)
+      if (bRef && bRef.destroy) bRef.destroy()
+      else if (bulletObj.destroy) bulletObj.destroy()
     })
 
     // bullets overlap enemies -> damage enemy and destroy bullet
@@ -748,8 +758,15 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  spawnBullet(x: number, y: number, vx: number, vy: number) {
-    const b = new Bullet(this, x, y, vx, vy)
+  spawnBullet(
+    x: number,
+    y: number,
+    vx: number,
+    vy: number,
+    texture: string = 'bullet',
+    owner: 'player' | 'enemy' = 'player'
+  ) {
+    const b = new Bullet(this, x, y, vx, vy, texture, owner)
     this.bullets.push(b)
     if (b.sprite) {
       this.bulletsGroup.add(b.sprite)
@@ -769,6 +786,8 @@ export default class GameScene extends Phaser.Scene {
     let e: Enemy
     if (type === 'heavy') {
       e = new HeavyEnemy(this, x, y)
+    } else if (type === 'shooter') {
+      e = new ShootingEnemy(this, x, y)
     } else {
       e = new Enemy(this, x, y)
     }

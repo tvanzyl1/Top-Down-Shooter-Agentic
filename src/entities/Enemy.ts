@@ -85,3 +85,42 @@ export class HeavyEnemy extends Enemy {
     this.sprite.setTint(0xee4444)
   }
 }
+
+// shooting enemy that stays at range and fires at the player
+export class ShootingEnemy extends Enemy {
+  shootTimer = 0
+  bulletSpeed = 620
+
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y)
+    this.health = 90
+    this.speed = 70
+    this.sprite.setTexture('enemy')
+    this.sprite.setTint(0x5588ff)
+  }
+
+  update(dt: number) {
+    super.update(dt)
+    if (this.isDead) return
+    const player = (this.scene as any).player
+    if (!player) return
+    const dist = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y)
+    if (dist <= this.aggroRadius) {
+      this.shootTimer -= dt
+      if (this.shootTimer <= 0) {
+        this.shootTimer = Phaser.Math.FloatBetween(0.9, 1.2)
+        const angle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y)
+        const spawnDist = 16
+        const spawnX = this.x + Math.cos(angle) * spawnDist
+        const spawnY = this.y + Math.sin(angle) * spawnDist
+        const vx = Math.cos(angle) * this.bulletSpeed
+        const vy = Math.sin(angle) * this.bulletSpeed
+        if ((this.scene as any).spawnBullet) {
+          ;(this.scene as any).spawnBullet(spawnX, spawnY, vx, vy, 'enemy-bullet', 'enemy')
+        }
+      }
+    } else {
+      this.shootTimer = 0
+    }
+  }
+}
