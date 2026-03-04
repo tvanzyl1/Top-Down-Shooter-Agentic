@@ -140,6 +140,14 @@ export default class Player {
     this.receiveDamage(amount, false)
   }
 
+  heal(amount: number) {
+    if (this.isDead || amount <= 0) return 0
+    const nextHealth = Math.min(this.maxHealth, this.health + amount)
+    const healed = nextHealth - this.health
+    this.health = nextHealth
+    return healed
+  }
+
   // apply damage; when bypassInvuln is true, damage will be applied even
   // if the player is in the brief invulnerability window. This supports
   // continuous DPS from standing in enemy contact while still showing
