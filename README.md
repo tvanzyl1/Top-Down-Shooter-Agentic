@@ -40,24 +40,24 @@ Project structure
   - systems/InputSystem.ts, SpawnerSystem.ts, CollisionSystem.ts, DifficultySystem.ts
   - utils/math.ts, constants.ts
 
-To Extend
-[x] Make player look different.
-[x] Make enemies look different.
-[x] Allow user to go back to main menu from the game.
-[x] Make ammo sprite look different.
-[x] Make weapon sprite look different.
-[x] Add new weapons: add a new system or extend `Player` to support variants.
-[ ] Fix rate of fire of different weapons
-[x] Add enemy types: extend `Enemy` and update `SpawnerSystem`.
-[ ] Add powerups: create new entities and spawn logic in `SpawnerSystem`.
-[x] Change the game back ground to a dark grey and buildings to a different color.
-[x] Add a "light" affect like a flash light.
-[x] Extend flash light and light affect to make map dark around player.
-[x] Bug: Ammo pick up before player has any weapons don't count towards pistol.
-[x] Add more random buildings with some lights in some of the windows.
-[x] Add a forest map.
-[x] Add a desert map.
-[x] Add health packs.
+To Extend  
+[x] Make player look different.  
+[x] Make enemies look different.  
+[x] Allow user to go back to main menu from the game.  
+[x] Make ammo sprite look different.  
+[x] Make weapon sprite look different.  
+[x] Add new weapons: add a new system or extend `Player` to support variants.  
+[ ] Fix rate of fire of different weapons  
+[x] Add enemy types: extend `Enemy` and update `SpawnerSystem`.  
+[ ] Add powerups: create new entities and spawn logic in `SpawnerSystem`.  
+[x] Change the game back ground to a dark grey and buildings to a different color.  
+[x] Add a "light" affect like a flash light.  
+[x] Extend flash light and light affect to make map dark around player.  
+[x] Bug: Ammo pick up before player has any weapons don't count towards pistol.  
+[x] Add more random buildings with some lights in some of the windows.  
+[x] Add a forest map.  
+[x] Add a desert map.  
+[x] Add health packs.  
 
 Progress so far
 
