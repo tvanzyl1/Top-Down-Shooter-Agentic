@@ -25,6 +25,7 @@ Controls
 - 1 / 2: switch between pistol and shotgun when available (shotgun pickups appear after score >=100; shells spawn infrequently only once shotgun has been picked up)
 - F: Flashlight beam follows cursor; world is darkened outside the cone
 - Heavy enemies (red, more HP) begin appearing occasionally after score >=100
+- Shooting enemies (blue) start spawning after score >=200 and fire a slow yellow projectile while the player is in aggro range
 
 Project structure
 
@@ -68,6 +69,8 @@ Progress so far
 - Health packs: one can exist at a time. It heals 20 HP, never above 100 HP, and another will not spawn for at least 20 seconds after pickup.
 - Shooting: bullets are physics objects that collide with buildings (destroyed) and overlap enemies to deal damage. Player can only shoot when equipped and with ammo; ammo is consumed per shot.
 - Enemies: zombie-like behavior - idle/wander until player is within aggro radius, then seek. Enemies and player are blocked by buildings and tree trunks. Multiple enemies can swarm the player and deal continuous DPS.
+- Heavy enemies (red) are slower but tankier and appear after score >=100.
+- Shooting enemies (blue) appear after score >=200 and fire a single yellow shot about once per second when the player is close.
 - Systems: input, spawner (now avoids spawning inside buildings), collision, difficulty scaling over time.
 
 Notes / next steps
