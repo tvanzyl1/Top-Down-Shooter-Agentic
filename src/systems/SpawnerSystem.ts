@@ -2,7 +2,7 @@
   SpawnerSystem: spawns enemies outside camera view around the player, obeys arena bounds.
 */
 import Phaser from 'phaser'
-import GameScene from '../scenes/GameScene'
+import type GameScene from '../scenes/GameScene'
 import { ARENA_WIDTH, ARENA_HEIGHT } from '../game/config'
 
 export default class SpawnerSystem {

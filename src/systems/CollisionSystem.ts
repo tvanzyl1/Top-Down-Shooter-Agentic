@@ -1,7 +1,7 @@
 /*
   CollisionSystem: simple distance-based collision detection for bullets<->enemies and enemies->player.
 */
-import GameScene from '../scenes/GameScene'
+import type GameScene from '../scenes/GameScene'
 
 export default class CollisionSystem {
   scene: GameScene
