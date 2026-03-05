@@ -67,6 +67,7 @@ Progress so far
 - Player: top down sprite, WASD movement, mouse aiming, health, brief invulnerability flash.
 - Weapons and ammo: player starts with no weapon; `Weapon` pickups appear in the world (green icon), provide ammo; ammo pickups (small green boxes) also spawn periodically and at start.
 - Health packs: one can exist at a time. It heals 20 HP, never above 100 HP, and another will not spawn for at least 20 seconds after pickup.
+- Enemy drops: shooting enemies now have a chance to drop ammo (any type), a health pack, or nothing, keeping each encounter unpredictable.
 - Shooting: bullets are physics objects that collide with buildings (destroyed) and overlap enemies to deal damage. Player can only shoot when equipped and with ammo; ammo is consumed per shot.
 - Enemies: zombie-like behavior - idle/wander until player is within aggro radius, then seek. Enemies and player are blocked by buildings and tree trunks. Multiple enemies can swarm the player and deal continuous DPS.
 - Heavy enemies (red) are slower but tankier and appear after score >=100.

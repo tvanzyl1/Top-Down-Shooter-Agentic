@@ -36,6 +36,10 @@ export default class GameScene extends Phaser.Scene {
   elapsed = 0
   score = 0
   isPaused = false
+  private dropChances = {
+    ammo: 0.35,
+    health: 0.25
+  }
 
   // graphics for flashlight effect
   darkOverlay!: Phaser.GameObjects.Graphics
@@ -733,6 +737,9 @@ export default class GameScene extends Phaser.Scene {
       const e = this.enemies[i]
       e.update(dt)
       if (e.isDead) {
+        if (e instanceof ShootingEnemy) {
+          this.tryDropForShootingEnemy(e.sprite.x, e.sprite.y)
+        }
         e.destroy()
         this.enemies.splice(i, 1)
         this.score += 10
@@ -794,5 +801,34 @@ export default class GameScene extends Phaser.Scene {
     this.enemies.push(e)
     if (e.sprite) this.enemiesGroup.add(e.sprite)
     return e
+  }
+
+  private tryDropForShootingEnemy(x: number, y: number) {
+    const roll = Phaser.Math.FloatBetween(0, 1)
+    if (roll <= this.dropChances.ammo) {
+      this.spawnDroppedAmmo(x, y)
+    } else if (roll <= this.dropChances.ammo + this.dropChances.health) {
+      this.spawnDroppedHealthPack(x, y)
+    }
+  }
+
+  private spawnDroppedAmmo(x: number, y: number) {
+    if (!this.ammoGroup) return
+    const type = Phaser.Utils.Array.GetRandom(['Pistol', 'Shotgun'])
+    const amount = type === 'Shotgun' ? 5 : 10
+    const tex = type === 'Shotgun' ? 'shell' : 'ammo'
+    const ammo = this.physics.add.sprite(x, y, tex) as Phaser.Physics.Arcade.Sprite
+    ammo.setImmovable(true)
+    ammo.setData('ref', { amount, type })
+    this.ammoGroup.add(ammo)
+  }
+
+  private spawnDroppedHealthPack(x: number, y: number) {
+    if (!this.healthPackGroup) return
+    if (this.healthPackGroup.countActive(true) > 0) return
+    const healthPack = this.physics.add.sprite(x, y, 'health-pack') as Phaser.Physics.Arcade.Sprite
+    healthPack.setImmovable(true)
+    healthPack.setData('ref', { amount: 20 })
+    this.healthPackGroup.add(healthPack)
   }
 }
