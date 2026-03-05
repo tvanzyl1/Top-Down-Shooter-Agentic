@@ -16,6 +16,19 @@ npm run build
 npm run preview
 ```
 
+Testing
+
+```bash
+npm test
+```
+
+`vitest` runs the suite defined under `tests/` with a Node-based runner (`vitest.config.ts`). The folder currently covers:
+
+- helpers: `math.test.ts` and `constants.test.ts` validate deterministic utilities/constants.
+- systems: `difficulty.test.ts` exercises pacing logic, `collision.test.ts` ensures proximity callbacks trigger damage, and `spawner.test.ts` mocks Phaser math/random hooks to cover enemy type selection.
+
+Additions to the suite should read from `tests/` and mock Phaser as needed; vitest already records Istanbul coverage when you run `npm test`.
+
 Controls
 
 - WASD: move

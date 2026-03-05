@@ -1,7 +1,7 @@
 /*
   DifficultySystem: gradually increases spawn rate and enemy speed/health over time.
 */
-import GameScene from '../scenes/GameScene'
+import type GameScene from '../scenes/GameScene'
 
 export default class DifficultySystem {
   scene: GameScene
